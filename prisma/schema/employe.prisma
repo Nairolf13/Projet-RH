@@ -1,0 +1,21 @@
+model Employe{
+    id Int @id @default(autoincrement())
+    firstName String @db.VarChar(255)
+    lastName String @db.VarChar(255)
+    mail String @unique
+    age Int?
+    password String @db.VarChar(255) 
+    picture String?
+    createdAt DateTime @default(now())
+    entreprise Entreprise @relation(fields: [entrepriseId],references: [id])
+    entrepriseId Int
+    computer Computer? @relation(fields:[computerId],references: [id])
+    computerId Int? @unique
+    sentMessages Message[] @relation("MessageSenderEmploye")
+    receivedMessages Message[] @relation("MessageRecipientEmploye")
+    calendarEvents CalendarEvent[]
+} 
+
+
+
+

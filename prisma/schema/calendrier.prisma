@@ -1,0 +1,10 @@
+model CalendarEvent {
+  id          Int      @id @default(autoincrement())
+  title       String
+  description String?
+  date        DateTime
+  employeId   Int
+  employe     Employe  @relation(fields: [employeId], references: [id])
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}

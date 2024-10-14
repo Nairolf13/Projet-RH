@@ -1,0 +1,36 @@
+{% extends "../layouts/base.twig" %}
+
+{% block style %}
+	<link rel="stylesheet" href="/assets/css/addComputer.css">
+{% endblock %}
+
+{% block title %}
+	<title>Ajout d'ordinateur</title>
+{% endblock %}
+
+{% block main %}
+	<main>
+		<section>
+			<div>
+				<div>
+					<h2>Ajouter un ordinateur</h2>
+				</div>
+				<div>
+					<form action="/addcomputer" method="POST">
+						<div>
+							<label for="mac">Adresse mac</label>
+							<input type="text" name="mac" id="mac">
+						</div>
+						<div>
+							<button>Ajouter</button>
+						</div>
+					</form>
+				</div>
+			</div>
+		</section>
+	</main>
+	{% if error %}
+		<div class="error">{{ error.password or error.mail }}</div>
+	{% endif %}
+
+{% endblock %}

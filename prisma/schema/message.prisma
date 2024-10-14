@@ -1,0 +1,21 @@
+model Message {
+    id          Int       @id @default(autoincrement())
+    content     String    @db.VarChar(1000)  
+    senderId    Int      
+    senderType  SenderType 
+    recipientId Int      
+    recipientType RecipientType 
+    createdAt   DateTime  @default(now())  
+    senderEmploye     Employe?    @relation("MessageSenderEmploye", fields: [senderId], references: [id], onDelete: Cascade, map: "Message_senderEmploye_fkey")
+    recipientEmploye  Employe?    @relation("MessageRecipientEmploye", fields: [recipientId], references: [id], onDelete: Cascade, map: "Message_recipientEmploye_fkey")
+}
+
+enum SenderType {
+    EMPLOYE
+    ENTREPRISE
+}
+
+enum RecipientType {
+    EMPLOYE
+    ENTREPRISE
+}

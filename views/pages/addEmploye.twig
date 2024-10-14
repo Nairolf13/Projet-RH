@@ -1,0 +1,57 @@
+{% extends "../layouts/base.twig" %}
+
+{% block style %}
+	<link rel="stylesheet" href="/assets/css/addEmploye.css">
+	<link rel="stylesheet" href="/assets/css/header.css">
+{% endblock %}
+
+{% block title %}
+	<title>Inscription</title>
+{% endblock %}
+   
+{% block main %} 
+	<main>
+		<section>
+			<div>
+				<div>
+					{% if employe %}<h2>Formulaire de modification</h2>{% else %}<h2>Ajouter un employé</h2>{% endif %}
+				</div>
+				<div>
+					<form {% if employe %} action="/updateEmploye" {% elseif entreprise %} action="/updateEmploye" {% else %} action="/addEmploye/{{ employe.id }}" {% endif %} method="POST" enctype="multipart/form-data">
+						<div>
+							<label for="firstName">Nom</label>
+							<input type="text" name="firstName" id="firstName" value="{{ employe.firstName }}">
+						</div>
+						<div>
+							<label for="lastName">Prénom</label>
+							<input type="text" name="lastName" id="lastName" value="{{ employe.lastName }}">
+						</div>
+						<div>
+							<label for="mail">Email</label>
+							<input type="email" name="mail" id="mail" value="{{ employe.mail }}">
+						</div>
+						<div>
+							<label for="age">Age</label>
+							<input type="number" name="age" id="age" value="{{ employe.age }}">
+						</div>
+						<div>
+							<label>Ajouter une photo</label>
+							<input id="picture" type="file" name="picture"/>
+						</div>
+						<div>
+							<label for="password">Mot de passe</label>
+							<input type="password" name="password" id="password">
+						</div>
+						<div>
+							<label for="confirmPassword">Confirmer le mot de passe</label>
+							<input type="password" name="confirmPassword" id="confirmPassword">
+						</div>
+						<div>
+							<button type="submit">{% if employe %} Modifier {% else %} Ajouter {% endif %}</button>
+						</div>
+					</form>
+				</div>
+			</div>
+		</section>
+	</main>
+{% endblock %}

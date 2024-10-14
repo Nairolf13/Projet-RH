@@ -1,0 +1,36 @@
+{% block style %}
+    <link rel="stylesheet" href="/assets/css/header.css">
+{% endblock %}
+
+<header>
+    <div class="header-container">
+        <div class="logo-container">
+            <img src="/../../assets/imgs/Human_Tech-.png" alt="Logo Human Tech">
+        </div>
+      
+        <div class="header-buttons">
+            <nav>
+                <ul>
+                    {% if entreprise %}
+                        <li><a href="/">Accueil</a></li>
+                        <li><a href="/register">Profil</a></li>
+                        <li><a href="/logout">Déconnexion</a></li>
+                    {% elseif employe %}
+                        <li><a href="/homeEmploye">Accueil</a></li>
+                        <li><a href="/updateEmploye">Profil</a></li>
+                        <li><a href="/logout">Déconnexion</a></li>
+                    {% else %}
+                        <li id="btn-login">
+                            <a href="javascript:void(0);">Connexion</a>
+                            <ul class="dropdown hidden">
+                                <li><a href="/login">Entreprise</a></li>
+                                <li><a href="/loginEmploye">Employé</a></li>
+                            </ul>
+                        </li>
+                        <li id="btn-register"><a href="/register">Inscription</a></li>
+                    {% endif %}
+                </ul>
+            </nav>
+        </div>
+    </div>
+</header>

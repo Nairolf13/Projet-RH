@@ -1,0 +1,49 @@
+{% extends "../layouts/base.twig" %}
+
+{% block style %}
+	<link rel="stylesheet" href="/assets/css/home.css">
+{% endblock %}
+
+{% block title %}
+	<title>Accueil</title>
+{% endblock %}
+
+{% block main %}
+	<section>
+		<form {% if entreprise %} action="/updateEntreprise/{{entreprise.id}}" {% else %} action="/register/{{entreprise.id}}" {% endif %} method="POST">
+			<div>
+				<label for="socialReason">Raison social</label>
+				<input type="text" name="socialReason" id="socialReason" value={{entreprise.socialReason}}>
+			</div>
+			<div>
+				<label for="siret">Siret</label>
+				<input type="text" name="siret" id="siret" value={{entreprise.siret}}>
+			</div>
+			<div>
+				<label for="mail">Email</label>
+				<input type="mail" name="mail" id="mail" value={{entreprise.mail}}>
+			</div>
+			<div>
+				<label for="password">Mot de passe</label>
+				<input type="password" name="password" id="password">
+			</div>
+			<div>
+				<label for="confirmPassword">Confirmer le mot de passe</label>
+				<input type="password" name="confirmPassword" id="confirmPassword">
+			</div>
+			<div>
+				<button>
+					{% if entreprise %}Modifier
+					{% else %}
+						S'inscrire
+					{% endif %}
+				</button>
+			</div>
+		</form>
+	</section>
+	{% if error %}
+		<div class="error">{{ error.password or error.mail }}</div>
+	{% endif %}
+
+
+{% endblock %}

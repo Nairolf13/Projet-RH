@@ -1,0 +1,307 @@
+{% extends "../layouts/base.twig" %}
+
+{% block style %}
+	<link rel="stylesheet" href="/assets/css/home.css">
+	<link rel="stylesheet" href="/assets/css/addEmploye.css">
+	<link rel="stylesheet" href="/assets/css/addComputer.css">
+	<link rel="stylesheet" href="/assets/css/addEmployeToComputer.css">
+{% endblock %}
+
+{% block title %}
+	<title>Workfusion</title>
+{% endblock %}
+
+{% block main %}
+
+	<div class="dashboard-container">
+		<aside class="sidebar">
+			<div class="nameEntreprise">
+				{% if entreprise %}
+					<h1>Bienvenue
+						{{ entreprise.socialReason }}</h1>
+				{% endif %}
+			</div>
+			<nav class="dashboard-nav">
+				<ul>
+					<li><a href="#" data-section="add-computer">Ajouter un ordi</a></li>
+					<li><a href="#" data-section="computers">Voir les ordinateurs</a></li>
+					<li><a href="#" data-section="add-employee">Ajouter un employé</a></li>
+					<li><a href="#" data-section="employees">Voir les employés</a></li>
+					<li><a href="#" data-section="assign-computer">Assigner un ordi</a></li>
+					<li><a href="#" data-section="assigned-computers">Voir les ordinateurs assignés</a></li>
+				</ul>
+			</nav>
+		</aside>
+		<main class="main-content">
+			<div id="content-area"></div>
+		</main>
+	</div>
+	<div id="hidden-content" style="display: none;">
+		<section id="computers">
+			<h2>Ordinateurs dans l'entreprise</h2>
+			<div class="section-content">
+				{% for computer in entreprise.computers %}
+					<div class="computer-container">
+						<h3>Ordinateur:
+							{{ computer.mac }}</h3>
+						<a href="/deleteComputer/{{ computer.id }}">Supprimer</a>
+					</div>
+				{% endfor %}
+			</div>
+		</section>
+
+		<section id="employees">
+			<h2>Employés dans l'entreprise</h2>
+			<div class="section-content">
+				<input type="text" id="searchBar" placeholder="Rechercher un employé" onkeyup="filterEmployes()">
+				{% for employe in entreprise.employes %}
+					<div class="employe-container">
+						<h3>{{ employe.firstName }}
+							{{ employe.lastName }}</h3>
+						{% if employe.picture %}
+							<img src="{{ employe.picture }}" alt="Photo de {{ employe.firstName }} {{ employe.lastName }}">
+						{% else %}
+							<p>Aucune photo disponible.</p>
+						{% endif %}
+						<p>Âge:
+							{{ employe.age }}</p>
+						<p>Email:
+							{{ employe.mail }}</p>
+						<a href="/updateEmploye/{{ employe.id }}">Modifier</a>
+						<a href="/deleteEmploye/{{ employe.id }}">Supprimer</a>
+					</div>
+				{% endfor %}
+			</div>
+		</section>
+
+		<section id="assigned-computers">
+			<h2>Ordinateurs occupés par un employé</h2>
+			<div class="section-content">
+				<ul>
+					{% for computer in entreprise.computers %}
+						{% if computer.employe %}
+							<li>
+								- PC:
+								{{ computer.mac }}<br>
+								- Assigné à:
+								{{ computer.employe.firstName }}
+								{{ computer.employe.lastName }}
+								<a href="/removeEmployeFromComputer/{{ computer.id }}/{{ computer.employe.id }}">Retirer</a>
+							</li>
+						{% endif %}
+					{% endfor %}
+				</ul>
+			</div>
+		</section>
+
+		<section id="summary-generator">
+			<h2>Générateur de résumé</h2>
+			<div class="section-content">
+				<div class="container">
+					<textarea id="text-input" placeholder="Entrez votre texte ici..." rows="10"></textarea>
+					<button id="summarize-button">Résumer</button>
+					<h3>Résumé :</h3>
+					<p id="summary-output"></p>
+				</div>
+			</div>
+		</section>
+
+		<section id="ai-advice">
+			<h2>Conseil d'IA</h2>
+			<div class="section-content">
+				<div id="chatbox">
+					<div id="messages"></div>
+					<input type="text" id="userInput" placeholder="Tapez votre message ici..."/>
+					<button id="sendBtn">Envoyer</button>
+				</div>
+			</div>
+		</section>
+		<section id="assign-computer">
+			<h2>Assigner un ordinateur</h2>
+			<form action="/addEmployeToComputer" method="POST">
+				<select name="computerId" required>
+					{% for computer in entreprise.computers %}
+						<option value="{{ computer.id }}">{{ computer.mac }}</option>
+					{% endfor %}
+				</select>
+				<select name="employeId" required>
+					{% for employe in entreprise.employes %}
+						<option value="{{ employe.id }}">{{ employe.firstName }}
+							{{ employe.lastName }}</option>
+					{% endfor %}
+				</select>
+				<button type="submit">Assigner</button>
+			</form>
+		</section>
+
+		<section id="add-computer">
+			<h2>Ajouter un ordinateur</h2>
+			<form action="/addComputer" method="POST">
+				<input type="text" name="mac" placeholder="Adresse MAC" required>
+				<button type="submit">Ajouter</button>
+			</form>
+		</section>
+
+		<section id="add-employee">
+			<h2>Ajouter un employé</h2>
+			<form action="/addemploye" method="POST" enctype="multipart/form-data">
+				<div>
+					<label for="firstName">Nom</label>
+					<input type="text" name="firstName" id="firstName" value="{{ employe.firstName }}">
+				</div>
+				<div>
+					<label for="lastName">Prénom</label>
+					<input type="text" name="lastName" id="lastName" value="{{ employe.lastName }}">
+				</div>
+				<div>
+					<label for="mail">Email</label>
+					<input type="email" name="mail" id="mail" value="{{ employe.mail }}">
+				</div>
+				<div>
+					<label for="age">Age</label>
+					<input type="number" name="age" id="age" value="{{ employe.age }}">
+				</div>
+				<div>
+					<label>Ajouter une photo</label>
+					<input id="picture" type="file" name="picture"/>
+				</div>
+				<div>
+					<label for="password">Mot de passe</label>
+					<input type="password" name="password" id="password">
+				</div>
+				<div>
+					<label for="confirmPassword">Confirmer le mot de passe</label>
+					<input type="password" name="confirmPassword" id="confirmPassword">
+				</div>
+				<div>
+					<button type="submit">Ajouter</button>
+				</div>
+			</section>
+		</div>
+
+		<script>
+			document.addEventListener('DOMContentLoaded', function () {
+const navLinks = document.querySelectorAll('.dashboard-nav a');
+const contentArea = document.getElementById('content-area');
+const hiddenContent = document.getElementById('hidden-content');
+
+navLinks.forEach(link => {
+link.addEventListener('click', function (e) {
+e.preventDefault();
+const sectionId = this.getAttribute('data-section');
+loadSection(sectionId);
+
+navLinks.forEach(l => l.classList.remove('active'));
+this.classList.add('active');
+});
+});
+
+function loadSection(sectionId) {
+const section = hiddenContent.querySelector (`#${sectionId}`);
+
+if (section) {
+contentArea.innerHTML = section.innerHTML;
+setupEventListeners();
+} else {
+contentArea.innerHTML = `<h2>${sectionId}</h2><p>Contenu non disponible</p>`;
+}
+}
+
+function setupEventListeners() {
+const summarizeButton = document.getElementById('summarize-button');
+if (summarizeButton) {
+summarizeButton.addEventListener('click', summarizeText);
+}
+
+const searchBar = document.getElementById('searchBar');
+if (searchBar) {
+searchBar.addEventListener('keyup', filterEmployes);
+}
+
+if (document.querySelector('.subsection-tabs')) {
+setupCommunicationTabs();
+}
+}
+
+// Chargez la première section par défaut
+loadSection('computers');
+});
+
+
+function sendMessage() {
+const userInput = document.getElementById('userInput').value.trim();
+if (! userInput) 
+return;
+
+
+
+appendMessage(userInput, 'user');
+document.getElementById('userInput').value = '';
+
+sendMessageToBot(userInput).then(response => {
+appendMessage(response.response, 'bot');
+}).catch(error => {
+console.error('Erreur lors de l\'envoi du message:', error);
+appendMessage('Erreur lors de la communication avec le bot.', 'bot');
+});
+}
+
+function appendMessage(message, type) {
+const messagesDiv = document.getElementById('messages');
+const messageElement = document.createElement('div');
+messageElement.className = `message ${type}`;
+messageElement.textContent = message;
+messagesDiv.appendChild(messageElement);
+messagesDiv.scrollTop = messagesDiv.scrollHeight;
+}
+
+async function sendMessageToBot(input) {
+const response = await fetch('/api/chat', {
+method: 'POST',
+headers: {
+'Content-Type': 'application/json'
+},
+body: JSON.stringify(
+{message: input}
+)
+});
+
+if (response.ok) {
+return response.json();
+} else {
+throw new Error('Erreur lors de l\'envoi du message au bot');
+}
+}
+
+function filterEmployes() {
+const input = document.getElementById('searchBar').value.toLowerCase();
+const employeContainers = document.querySelectorAll('.employe-container');
+
+employeContainers.forEach(container => {
+const employeName = container.querySelector('h3').textContent.toLowerCase();
+container.style.display = employeName.includes(input) ? 'block' : 'none';
+});
+}
+
+function setupCommunicationTabs() {
+const tabButtons = document.querySelectorAll('.tab-button');
+const subsections = document.querySelectorAll('.subsection');
+
+tabButtons.forEach(button => {
+button.addEventListener('click', () => {
+const tabId = button.getAttribute('data-tab');
+
+tabButtons.forEach(btn => btn.classList.remove('active'));
+subsections.forEach(section => section.classList.remove('active'));
+
+button.classList.add('active');
+document.getElementById(tabId).classList.add('active');
+});
+});
+}
+		</script>
+
+		{% if error %}
+			<div class="error">{{ error.password or error.mail }}</div>
+		{% endif %}
+	{% endblock %}

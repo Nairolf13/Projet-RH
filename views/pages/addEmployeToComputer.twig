@@ -1,0 +1,49 @@
+{% extends "../layouts/base.twig" %}
+
+{% block style %}
+	<link rel="stylesheet" href="/assets/css/addEmployeToComputer.css">
+{% endblock %}
+
+
+{% block title %}
+	<title>Ajouter un employé à un ordinateur</title>
+{% endblock %}
+
+{% block main %}
+	<div id="container-form">
+		<h1>Assigner un employé à un ordinateur</h1>
+
+		<h2>Ordinateurs disponibles</h2>
+		<ul>
+			{% for computer in computers %}
+				{% if not computer.employe %}
+					<li>
+						{{ computer.mac }}
+						- Non assigné
+					</li>
+				{% endif %}
+			{% endfor %}
+		</ul>
+
+
+		<h2>Assigner un employé</h2>
+		<form action="/addEmployeToComputer" method="POST">
+			<select name="computerId">
+				{% for computer in computers %}
+					<option value="{{ computer.id }}">{{ computer.mac }}</option>
+				{% endfor %}
+			</select>
+			<select name="employeId">
+				{% for employe in employes %}
+					<option value="{{ employe.id }}">{{ employe.firstName }}
+						{{ employe.lastName }}</option>
+				{% endfor %}
+			</select>
+			<button type="submit">Assigner</button>
+		</form>
+	</div>
+	{% if error %}
+		<div class="error">{{ error.password or error.mail }}</div>
+	{% endif %}
+
+{% endblock %}

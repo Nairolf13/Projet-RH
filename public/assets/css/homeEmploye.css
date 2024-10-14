@@ -1,0 +1,127 @@
+/* Style général */
+main {
+    font-family: Arial, sans-serif;
+    margin: 20px;
+}
+
+h2 {
+    font-size: 1.5em;
+    margin-bottom: 10px;
+    color: #333;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+/* Formulaires et champs de saisie */
+textarea {
+    width: 100%;
+    padding: 10px;
+    font-size: 1em;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    resize: vertical;
+    margin-bottom: 10px;
+}
+
+select {
+    padding: 10px;
+    font-size: 1em;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    margin-bottom: 10px;
+    width: 100%;
+}
+
+button {
+    background-color: #28a745;
+    color: white;
+    border: none;
+    padding: 10px 15px;
+    border-radius: 5px;
+    font-size: 1em;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+button:hover {
+    background-color: #218838;
+}
+
+.messages-container {
+    margin-top: 20px;
+}
+
+.message {
+    background-color: #f9f9f9;
+    padding: 15px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    margin-bottom: 10px;
+}
+
+.message strong {
+    color: #333;
+}
+
+.message p {
+    margin: 5px 0;
+}
+
+.hidden {
+    display: none;
+}
+
+/* Toggle button styles */
+.toggle-button {
+    cursor: pointer;
+    background-color: #007bff;
+    color: white;
+    border-radius: 5px;
+    padding: 2px 8px;
+    text-decoration: none;
+    font-size: 0.9em;
+    transition: background-color 0.3s ease;
+}
+
+.toggle-button:hover {
+    background-color: #0056b3;
+}
+
+.section-content {
+    padding: 10px 15px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    margin-top: 10px;
+    background-color: #f8f9fa;
+}
+
+.messages-container .section-content {
+    padding: 0;
+}
+
+@media (max-width: 600px) {
+    textarea,
+    select,
+    button {
+        width: 100%;
+    }
+
+    h2 {
+        font-size: 1.2em;
+    }
+
+    button {
+        width: 100%;
+        padding: 12px;
+    }
+    body{
+        flex-direction: column;
+    }
+    header{
+        flex-direction: column;
+    }
+    .sidebar{
+        max-width: 110px;
+    }
+}

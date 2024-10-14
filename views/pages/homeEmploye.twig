@@ -1,0 +1,458 @@
+{% extends "../layouts/base.twig" %}
+
+{% block style %}
+	<link rel="icon" href="/../../assets/imgs/Human_Tech-.png" type="human-logo">
+	<link rel="stylesheet" href="/assets/css/home.css">
+	<link href='https://cdn.jsdelivr.net/npm/fullcalendar@5.10.2/main.min.css' rel='stylesheet'/>
+{% endblock %}
+
+{% block title %}
+	<title>Accueil</title>
+{% endblock %}
+
+{% block main %}
+	<main>
+
+		<div class="dashboard-container">
+			<aside class="sidebar">
+				<p id="welcome">
+					Bienvenue
+					{{ employe.firstName }}
+					{{ employe.lastName }}
+				</p>
+				<nav class="dashboard-nav">
+					<ul>
+						<li><a href="#" data-section="agenda">Calendrier</a></li>
+						<li><a href="#" data-section="summary-generator">Générer un résumé depuis un fichier PDF</a></li>
+						<li><a href="#" data-section="ai-advice">Demander des conseil à l'IA</a></li>
+						<li><a href="#" data-section="communication">Messagerie</a></li>
+					</ul>
+				</nav>
+			</aside>
+			<div class="main-content">
+				<div id="content-area"></div>
+			</div>
+		</div>
+
+		<div id="hidden-content" style="display: none;">
+			<section id="agenda">
+				<h2>Calendrier</h2>
+				<div class="section-content">
+					<div id="calendar"></div>
+					<div id="event-form" style="display: none;">
+						<h3>Ajouter une note</h3>
+						<form id="add-event-form">
+							<input type="hidden" id="event-id">
+							<input type="date" id="event-date" required>
+							<input type="text" id="event-title" placeholder="Titre de la note" required>
+							<textarea id="event-description" placeholder="Description"></textarea>
+							<button type="submit">Ajouter</button>
+						</form>
+					</div>
+				</div>
+			</section>
+
+			<section id="summary-generator">
+				<h2>Générateur de résumé</h2>
+				<div class="section-content">
+					<div class="container">
+						<textarea id="text-input" placeholder="Entrez votre texte ici..." rows="10"></textarea>
+						<button id="summarize-button">Résumer</button>
+						<div id="loader" style="display: none;">Chargement...</div>
+						<h3>Résumé :</h3>
+						<p id="summary-output"></p>
+					</div>
+				</div>
+			</section>
+
+			<section id="ai-advice">
+				<h2>Conseil d'IA</h2>
+				<div class="section-content">
+					<div id="chatbox">
+						<div id="messages"></div>
+						<input type="text" id="userInput" placeholder="Tapez votre message ici..."/>
+						<button id="sendBtn">Envoyer</button>
+					</div>
+				</div>
+			</section>
+
+			<section id="communication">
+				<h2>Messagerie</h2>
+				<div class="section-content">
+					<div class="subsection-tabs">
+						<button class="tab-button active" data-tab="messaging">Messagerie</button>
+						<button class="tab-button" data-tab="inbox">Boîte de réception</button>
+					</div>
+
+					<div id="messaging" class="subsection active">
+						<h3>Envoyer un message</h3>
+						<form action="/sendMessage" method="POST">
+							<textarea name="content" placeholder="Tapez votre message ici" required></textarea>
+							<select name="recipientId" required>
+								{% for otherEmploye in employe.entreprise.employes %}
+									{% if otherEmploye.id != employe.id %}
+										<option value="{{ otherEmploye.id }}">{{ otherEmploye.firstName }}
+											{{ otherEmploye.lastName }}</option>
+									{% endif %}
+								{% endfor %}
+							</select>
+							<input type="hidden" name="recipientType" value="EMPLOYE">
+							<button type="submit">Envoyer</button>
+						</form>
+					</div>
+
+					<div id="inbox" class="subsection">
+						<h3>Boîte de réception</h3>
+						<div class="messages-container">
+							{% if messages and messages|length > 0 %}
+								{% for message in messages %}
+									{% if message.recipientId == employe.id %}
+										<div class="message">
+											<p>
+												<strong>De:
+													{{ message.senderEmploye.firstName }}
+													{{ message.senderEmploye.lastName }}</strong>
+											</p>
+											<p>{{ message.content }}</p>
+											<p>
+												<em>{{ message.createdAt | date("d-m-Y H:i") }}</em>
+											</p>
+											<form action="/deleteMessage" method="POST" style="display:inline;">
+												<input type="hidden" name="messageId" value="{{ message.id }}">
+												<button type="submit" class="delete-btn">Supprimer</button>
+											</form>
+										</div>
+									{% endif %}
+								{% endfor %}
+							{% else %}
+								<p>Aucun message dans votre boîte de réception.</p>
+							{% endif %}
+						</div>
+					</div>
+				</div>
+
+			</section>
+		</div>
+	</main>
+{% endblock %}
+{% block script %}
+	<script src='https://cdn.jsdelivr.net/npm/fullcalendar@5.10.2/main.min.js'></script>
+	<script>
+		let calendar;
+
+document.addEventListener('DOMContentLoaded', function () {
+const navLinks = document.querySelectorAll('.dashboard-nav a');
+const contentArea = document.getElementById('content-area');
+const hiddenContent = document.getElementById('hidden-content');
+
+navLinks.forEach(link => {
+link.addEventListener('click', function (e) {
+e.preventDefault();
+const sectionId = this.getAttribute('data-section');
+loadSection(sectionId);
+
+navLinks.forEach(l => l.classList.remove('active'));
+this.classList.add('active');
+});
+});
+
+function setupCommunicationTabs() {
+const tabButtons = document.querySelectorAll('.tab-button');
+const subsections = document.querySelectorAll('.subsection');
+
+tabButtons.forEach(button => {
+button.addEventListener('click', () => {
+const tabId = button.getAttribute('data-tab');
+tabButtons.forEach(btn => btn.classList.remove('active'));
+subsections.forEach(section => section.classList.remove('active'));
+button.classList.add('active');
+document.getElementById(tabId).classList.add('active');
+});
+});
+}
+
+function setupCalendar() {
+let calendarEl = document.getElementById('calendar');
+calendar = new FullCalendar.Calendar(calendarEl, {
+initialView: 'dayGridMonth',
+headerToolbar: {
+left: 'prev,next today',
+center: 'title',
+right: 'dayGridMonth,timeGridWeek,timeGridDay'
+},
+dateClick: function (info) {
+showEventForm(info.dateStr);
+},
+eventClick: function (info) {
+showEventDetails(info.event);
+},
+events: '/api/calendar-events'
+});
+calendar.render();
+setupEventListeners();
+
+document.getElementById('add-event-form').addEventListener('submit', function (e) {
+e.preventDefault();
+addOrUpdateEvent();
+});
+}
+
+function showEventForm(date, event = null) {
+const form = document.getElementById('event-form');
+if (form) {
+form.style.display = 'block';
+const dateInput = document.getElementById('event-date');
+const titleInput = document.getElementById('event-title');
+const descriptionInput = document.getElementById('event-description');
+const idInput = document.getElementById('event-id');
+
+if (dateInput) {
+if (event && event.start) {
+const eventDate = new Date(event.start);
+dateInput.value = eventDate.toISOString().split('T')[0];
+} else {
+dateInput.value = date;
+}
+}
+if (titleInput) 
+titleInput.value = event ? event.title : '';
+
+
+
+if (descriptionInput) 
+descriptionInput.value = event ? event.extendedProps.description || '' : ''
+
+
+
+
+
+if (idInput) 
+idInput.value = event ? event.id : ''
+
+
+
+
+
+} else {
+console.error('Le formulaire d\'événement n\'a pas été trouvé')
+}
+}
+
+function showEventDetails(event) {
+const modal = document.createElement('div');
+modal.className = 'event-modal';
+modal.innerHTML = `
+        <h3>${
+event.title
+}</h3>
+        <p>${
+event.extendedProps.description || ''
+}</p>
+        <p>Date: ${
+event.start.toLocaleDateString()
+}</p>
+        <button class="modify-event" data-event='${
+JSON.stringify(event)
+}'>Modifier</button>
+        <button class="delete-event" data-id="${
+event.id
+}">Supprimer</button>
+        <button class="close-modal">Fermer</button>
+    `;
+document.body.appendChild(modal)
+
+modal.querySelector('.modify-event').addEventListener('click', () => showEventForm(event.start, event))
+modal.querySelector('.delete-event').addEventListener('click', () => deleteEvent(event.id, modal))
+modal.querySelector('.close-modal').addEventListener('click', () => modal.remove())
+}
+function addOrUpdateEvent() {
+const form = document.getElementById('add-event-form')
+if (! form) {
+console.error('Le formulaire d\'événement n\'a pas été trouvé')
+return;
+}
+
+const idInput = form.querySelector('#event-id')
+const titleInput = form.querySelector('#event-title')
+const descriptionInput = form.querySelector('#event-description')
+const dateInput = form.querySelector('#event-date')
+
+if (! titleInput || ! dateInput) {
+console.error('Les champs obligatoires du formulaire sont manquants')
+return;
+}
+
+const id = idInput ? idInput.value : ''
+const title = titleInput.value;
+const description = descriptionInput ? descriptionInput.value : ''
+const date = dateInput.value;
+
+if (! title || ! date) {
+console.error('Le titre et la date sont obligatoires')
+return;
+}
+
+const eventData = {
+title,
+description,
+date
+};
+const url = id ? `/api/calendar-events/${id}` : '/api/calendar-events';
+const method = id ? 'PUT' : 'POST'
+
+fetch(url, {
+method: method,
+headers: {
+'Content-Type': 'application/json'
+},
+body: JSON.stringify(eventData)
+}).then(response => response.json()).then(savedEvent => {
+form.reset();
+form.style.display = 'none'
+if (calendar) {
+calendar.refetchEvents()
+}
+
+setupEventListeners()
+setTimeout(() => {
+window.location.reload()
+}, 200)
+}).catch(error => console.error('Erreur:', error))
+}
+
+function deleteEvent(id, modal) {
+if (confirm('Êtes-vous sûr de vouloir supprimer cet événement ?')) {
+fetch (`/api/calendar-events/${id}`, {method: 'DELETE'}).then(response => {
+if (!response.ok) {
+throw new Error('Erreur lors de la suppression')
+}
+return response.json();
+}).then(data => {
+console.log(data.message)
+calendar.refetchEvents()
+if (modal && modal.parentNode) {
+modal.remove()
+setTimeout(() => {
+window.location.reload()
+}, 200);
+}
+}).catch(error => {
+console.error('Erreur:', error)
+alert('Erreur lors de la suppression de l\'événement');
+})
+}
+}
+function loadSection(sectionId) {
+const section = hiddenContent.querySelector (`#${sectionId}`)
+if (section) {
+contentArea.innerHTML = section.innerHTML
+if (sectionId === 'agenda') {
+setupCalendar();
+}
+setupEventListeners()
+} else {
+contentArea.innerHTML = `<h2>${sectionId}</h2><p>Contenu non disponible</p>`
+}
+}
+
+
+function setupEventListeners() {
+
+const summarizeButton = document.getElementById('summarize-button')
+if (summarizeButton) {
+summarizeButton.addEventListener('click', summarizeText)
+}
+
+const sendBtn = document.getElementById('sendBtn')
+if (sendBtn) {
+sendBtn.addEventListener('click', sendMessage)
+}
+
+if (document.querySelector('.subsection-tabs')) {
+setupCommunicationTabs()
+}
+}
+
+function summarizeText() {
+const textInput = document.getElementById('text-input').value.trim()
+const loader = document.getElementById('loader');
+const summaryOutput = document.getElementById('summary-output')
+
+if (textInput === '') {
+alert('Veuillez entrer du texte à résumer.')
+return;
+}
+
+loader.style.display = 'block'
+summaryOutput.innerText = ''
+
+fetch('/api/summarize', {
+method: 'POST',
+headers: {
+'Content-Type': 'application/json'
+},
+body: JSON.stringify(
+{text: textInput}
+)
+}).then(response => {
+if (!response.ok) 
+throw new Error('Erreur lors de la génération du résumé')
+
+
+
+
+
+return response.json();
+}).then(data => summaryOutput.innerText = data.summary).catch(error => {
+console.error('Erreur:', error)
+alert('Une erreur s\'est produite lors de la génération du résumé.')
+}). finally(() => loader.style.display = 'none')
+}
+
+function sendMessage() {
+const userInput = document.getElementById('userInput').value.trim()
+if (! userInput) 
+return;
+
+
+
+appendMessage(userInput, 'user');
+document.getElementById('userInput').value = ''
+
+sendMessageToBot(userInput).then(response => appendMessage(response.response, 'bot')).catch(error => {
+console.error('Erreur lors de l\'envoi du message:', error);
+appendMessage('Erreur lors de la communication avec le bot.', 'bot')
+})
+}
+
+function appendMessage(message, type) {
+const messagesDiv = document.getElementById('messages')
+const messageElement = document.createElement('div')
+messageElement.className = `message ${type}`
+messageElement.textContent = message
+messagesDiv.appendChild(messageElement)
+messagesDiv.scrollTop = messagesDiv.scrollHeight
+}
+
+async function sendMessageToBot(input) {
+const response = await fetch('/api/chat', {
+method: 'POST',
+headers: {
+'Content-Type': 'application/json'
+},
+body: JSON.stringify(
+{message: input}
+)
+});
+
+if (response.ok) {
+return response.json()
+} else {
+throw new Error('Erreur lors de l\'envoi du message au bot')
+}
+}
+
+loadSection('agenda')
+});
+	</script>
+{% endblock %}
