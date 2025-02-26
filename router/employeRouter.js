@@ -364,4 +364,30 @@ employeRouter.delete('/api/calendar-events/:id', authguardEmploye, async (req, r
     }
 });
 
+const OPENAI_KEY = process.env.OPENAI_API_KEY; 
+employeRouter.post('/chat', async (req, res) => {
+    const input = req.body.message;
+    
+    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${OPENAI_KEY}`
+        },
+        body: JSON.stringify({
+            model: 'gpt-3.5-turbo',
+            messages: [{ role: 'user', content: input }],
+            temperature: 0.7
+        })
+    });
+    
+    if (response.ok) {
+        const data = await response.json();
+        res.json({ response: data.choices[0].message.content });
+    } else {
+        res.status(500).json({ error: 'Erreur lors de la communication avec OpenAI' });
+    }
+});
+
+
 module.exports = employeRouter  

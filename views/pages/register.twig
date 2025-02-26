@@ -19,7 +19,7 @@
 						<h2>Formulaire d'inscription</h2>
 					{% endif %}
 				</div>
-				<div>
+				<div class="form">
 					<form {% if entreprise %} action="/updateEntreprise/{{entreprise.id}}" {% else %} action="/register" {% endif %} method="POST">
 						<div>
 							<label for="socialReason">Raison social</label>

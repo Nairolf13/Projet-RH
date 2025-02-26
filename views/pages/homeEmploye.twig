@@ -398,59 +398,54 @@ body: JSON.stringify(
 if (!response.ok) 
 throw new Error('Erreur lors de la génération du résumé')
 
-
-
-
-
 return response.json();
 }).then(data => summaryOutput.innerText = data.summary).catch(error => {
 console.error('Erreur:', error)
 alert('Une erreur s\'est produite lors de la génération du résumé.')
 }). finally(() => loader.style.display = 'none')
 }
-
 function sendMessage() {
-const userInput = document.getElementById('userInput').value.trim()
-if (! userInput) 
-return;
+    const userInput = document.getElementById('userInput').value.trim();
+    if (!userInput) return;
 
+    appendMessage(userInput, 'user');
+    document.getElementById('userInput').value = '';
 
+    sendMessageToBot(userInput)
+        .then(response => appendMessage(response, 'bot'))
+        .catch(error => {
+            console.error('Erreur lors de l\'envoi du message:', error);
+            appendMessage('Erreur lors de la communication avec OpenAI.', 'bot');
+        });
+}
+document.getElementById('sendBtn').addEventListener('click', sendMessage);
 
-appendMessage(userInput, 'user');
-document.getElementById('userInput').value = ''
+async function sendMessageToBot(input) {
+    const response = await fetch('/chat', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ message: input })
+    });
 
-sendMessageToBot(userInput).then(response => appendMessage(response.response, 'bot')).catch(error => {
-console.error('Erreur lors de l\'envoi du message:', error);
-appendMessage('Erreur lors de la communication avec le bot.', 'bot')
-})
+    if (response.ok) {
+        const data = await response.json();
+        return data.response;
+    } else {
+        throw new Error('Erreur lors de la communication avec le backend');
+    }
 }
 
 function appendMessage(message, type) {
-const messagesDiv = document.getElementById('messages')
-const messageElement = document.createElement('div')
-messageElement.className = `message ${type}`
-messageElement.textContent = message
-messagesDiv.appendChild(messageElement)
-messagesDiv.scrollTop = messagesDiv.scrollHeight
+    const messagesDiv = document.getElementById('messages');
+    const messageElement = document.createElement('div');
+    messageElement.className = `message ${type}`;
+    messageElement.textContent = message;
+    messagesDiv.appendChild(messageElement);
+    messagesDiv.scrollTop = messagesDiv.scrollHeight;
 }
 
-async function sendMessageToBot(input) {
-const response = await fetch('/api/chat', {
-method: 'POST',
-headers: {
-'Content-Type': 'application/json'
-},
-body: JSON.stringify(
-{message: input}
-)
-});
-
-if (response.ok) {
-return response.json()
-} else {
-throw new Error('Erreur lors de l\'envoi du message au bot')
-}
-}
 
 loadSection('agenda')
 });
