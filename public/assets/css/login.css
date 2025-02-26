@@ -95,10 +95,11 @@ section {
 
 @media (max-width: 480px) {
     section {
+        height: 35%;
         width: 75%;
-        padding: 30px;
+        padding: 20px;
         position: absolute;
-        bottom: 20%;
+        bottom: 15%;
     }
 
     .header-buttons {
