@@ -95,13 +95,21 @@ section {
 
 @media (max-width: 480px) {
     section {
-        width: 90%;
+        width: 75%;
         padding: 30px;
+        position: absolute;
+        bottom: 20%;
     }
 
     .header-buttons {
         top: 10px;
         right: 10px;
+    }
+
+    .logo-container img{
+        position: absolute;
+        top: -5%;
+        left: -39%;
     }
 }
 
