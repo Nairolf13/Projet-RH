@@ -108,8 +108,10 @@ section {
 
     .logo-container img{
         position: absolute;
-        top: -5%;
-        left: -39%;
+        top: 4%;
+        left: 10%;
+        height: 350px;
+        width: 350px;
     }
 }
 
