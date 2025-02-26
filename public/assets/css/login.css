@@ -50,7 +50,7 @@ label {
 }
 
 input {
-    width: 100%;
+    width: 91%;
     padding: 12px;
     border: 2px solid #e0e0e0;
     border-radius: 8px;
@@ -108,10 +108,10 @@ section {
 
     .logo-container img{
         position: absolute;
-        top: 4%;
+        top: 0%;
         left: 10%;
-        height: 350px;
-        width: 350px;
+        height: 100px;
+        width: 100px;
     }
 }
 
