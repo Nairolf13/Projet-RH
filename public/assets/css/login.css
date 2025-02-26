@@ -95,7 +95,6 @@ section {
 
 @media (max-width: 480px) {
     section {
-        height: 35%;
         width: 75%;
         padding: 20px;
         position: absolute;
